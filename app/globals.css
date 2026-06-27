@@ -1,26 +1,140 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ------------------------------------------------------------------ */
+/*  Signature Studio — dark, minimal, tech-forward (adatepe.dev brand) */
+/* ------------------------------------------------------------------ */
+
+@theme {
+  /* Surfaces — adatepe.dev zinc near-black. Elevation reads bg < panel < hover,
+     mirroring the real site (bg #0e0e10 / card #18181b / hover #1e1e22). */
+  --color-bg: #0c0c0e;
+  --color-bg-elevated: #0e0e10;
+  --color-panel: #18181b;
+  --color-panel-hover: #1e1e22;
+  --color-border: #27272a;
+  --color-border-strong: #3a3a3e;
+
+  /* Text — brand zinc ramp (#f0f0f0 / #a0a0a0 / muted tertiary) */
+  --color-fg: #f0f0f0;
+  --color-fg-muted: #a0a0a0;
+  --color-fg-subtle: #6f6f76;
+
+  /* Accent — adatepe electric azure (also the DEFAULT signature accent).
+     Chrome use only. The signature derives its own contrast-safe
+     accentText/accentFill via lib/accent.ts; never hardcode this for links. */
+  --color-accent: #4d7dff;
+  --color-accent-hot: #6e96ff;
+  --color-accent-dim: #2b3a66;
+
+  /* Radii — soft, restrained. Chrome only: Outlook squares the exported card. */
+  --radius-control: 0.5rem; /* 8px  — inputs, buttons, chips */
+  --radius-panel: 0.875rem; /* 14px — panels, cards */
+  --radius-pill: 9999px;
+
+  /* Elevation — flat, a single soft shadow. No neon, no glow on controls. */
+  --shadow-panel: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -14px rgba(0, 0, 0, 0.55);
+  --shadow-pop: 0 12px 40px -12px rgba(0, 0, 0, 0.6);
+
+  /* Fonts — Bricolage (display) / Hanken (UI sans) / JetBrains (mono values).
+     Hanken stands in for the site's Geist/Helvetica; same minimal-neutral family. */
+  --font-display: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-mono), ui-monospace, monospace;
+
+  /* Easing — Emil/Family curves */
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-family: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-ui: cubic-bezier(0.2, 0, 0, 1);
+
+  /* Motion tokens */
+  --animate-shimmer: shimmer 3.2s linear infinite;
+  --animate-rise: rise 0.5s var(--ease-family) both;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@keyframes shimmer {
+  to {
+    background-position: 200% center;
   }
 }
 
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Strip reveal for the profile photo (straight, not skewed) */
+@keyframes strip-in {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+html {
+  color-scheme: dark;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Atmospheric backdrop: faint grid + a single cool glow, no flat void */
+.app-bg::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(120% 90% at 78% -10%, rgba(77, 125, 255, 0.1), transparent 55%),
+    radial-gradient(90% 70% at 0% 110%, rgba(110, 150, 255, 0.05), transparent 50%);
+  pointer-events: none;
+}
+
+.app-bg::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(120% 100% at 50% 0%, #000 35%, transparent 80%);
+  pointer-events: none;
+}
+
+/* Refined scrollbars on the editor pane */
+.scroll-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border-strong) transparent;
+}
+.scroll-thin::-webkit-scrollbar {
+  width: 8px;
+}
+.scroll-thin::-webkit-scrollbar-thumb {
+  background: var(--color-border-strong);
+  border-radius: 99px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

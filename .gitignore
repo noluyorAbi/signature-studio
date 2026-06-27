@@ -39,3 +39,16 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# generated signature artifacts (regenerate with `bun run gen` / the app)
+/alperen-signature.html
+/alperen-signature-animated.html
+/adatepe-portrait.gif
+/adatepe-signature.gif
+
+# tooling / scratch
+.playwright-mcp/
+*.rvf
+*.rvf.lock
+*.db
+public/_*.html

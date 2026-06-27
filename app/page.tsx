@@ -1,65 +1,139 @@
-import Image from "next/image";
+"use client";
+
+import { useMemo, useState } from "react";
+import { usePersistentSignature } from "@/lib/usePersistentSignature";
+import { buildSignatureHtml } from "@/lib/exportHtml";
+import { Editor } from "@/components/Editor";
+import { SignatureCard } from "@/components/SignatureCard";
+import { ExportPanel } from "@/components/ExportPanel";
+import { SparkleIcon, ResetIcon } from "@/components/icons";
+
+type Mode = "animated" | "email";
 
 export default function Home() {
+  const { data, update, updateSocial, reset, hydrated } = usePersistentSignature();
+  const [playKey, setPlayKey] = useState(0);
+  const [mode, setMode] = useState<Mode>("animated");
+  const staticHtml = useMemo(() => buildSignatureHtml(data), [data]);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="app-bg min-h-screen">
+      <header className="mx-auto flex max-w-[1280px] items-center justify-between px-6 pt-7 pb-4">
+        <div className="flex items-center gap-2.5">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--color-accent)] text-white shadow-[0_6px_18px_-6px_var(--color-accent)]">
+            <SparkleIcon size={17} />
+          </span>
+          <div className="leading-tight">
+            <h1 className="font-display text-[15px] font-bold tracking-tight text-[var(--color-fg)]">
+              Signature Studio
+            </h1>
+            <p className="font-mono text-[10px] uppercase tracking-wider text-[var(--color-fg-subtle)]">
+              Animated, email-safe signatures
+            </p>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+        <span className="hidden rounded-full border border-[var(--color-border)] px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-[var(--color-fg-subtle)] sm:inline">
+          POC · adatepe.dev
+        </span>
+      </header>
+
+      <main className="mx-auto grid max-w-[1280px] grid-cols-1 gap-6 px-6 pb-16 lg:grid-cols-[minmax(0,430px)_minmax(0,1fr)]">
+        {/* Editor */}
+        <section className="scroll-thin rounded-2xl border border-[var(--color-border)] bg-[var(--color-panel)] p-5 lg:sticky lg:top-6 lg:max-h-[calc(100vh-128px)] lg:overflow-auto">
+          <Editor data={data} update={update} updateSocial={updateSocial} reset={reset} />
+        </section>
+
+        {/* Preview + export */}
+        <section className="flex flex-col gap-6">
+          <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-panel)] p-5">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <h2 className="font-display text-sm font-semibold text-[var(--color-fg)]">Live preview</h2>
+              <div className="flex items-center gap-2">
+                <div className="flex rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] p-0.5 text-[11px]">
+                  <ModeButton active={mode === "animated"} onClick={() => setMode("animated")}>
+                    Animated
+                  </ModeButton>
+                  <ModeButton active={mode === "email"} onClick={() => setMode("email")}>
+                    Email
+                  </ModeButton>
+                </div>
+                {mode === "animated" && (
+                  <button
+                    type="button"
+                    onClick={() => setPlayKey((k) => k + 1)}
+                    title="Replay animation"
+                    className="group inline-flex items-center gap-1.5 rounded-md border border-[var(--color-border)] px-2.5 py-1.5 text-[11px] font-medium text-[var(--color-fg-muted)] transition-colors hover:border-[var(--color-border-strong)] hover:text-[var(--color-fg)]"
+                  >
+                    <ResetIcon size={13} className="transition-transform duration-500 group-hover:-rotate-180" />
+                    Replay
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <EmailWindow>
+              {mode === "animated" ? (
+                <div
+                  key={`${playKey}-${hydrated}`}
+                  className="motion-safe:[animation:rise_0.5s_var(--ease-family)_both]"
+                >
+                  <SignatureCard data={data} playKey={playKey} />
+                </div>
+              ) : (
+                <div dangerouslySetInnerHTML={{ __html: staticHtml }} />
+              )}
+            </EmailWindow>
+
+            <p className="mt-3 text-[11px] leading-relaxed text-[var(--color-fg-subtle)]">
+              {mode === "animated"
+                ? "Interactive preview. Animations are preview-only; recipients get the static version."
+                : "Exactly the HTML pasted into your email client. No scripts, no animation, table-based, Outlook-safe."}
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-panel)] p-5">
+            <h2 className="mb-4 font-display text-sm font-semibold text-[var(--color-fg)]">Export</h2>
+            <ExportPanel data={data} />
+          </div>
+        </section>
       </main>
+    </div>
+  );
+}
+
+function ModeButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-md px-2.5 py-1 font-medium transition-colors duration-150 ${
+        active ? "bg-[var(--color-panel-hover)] text-[var(--color-fg)]" : "text-[var(--color-fg-subtle)] hover:text-[var(--color-fg-muted)]"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+/** A faux email composer so the signature is seen in its real context. */
+function EmailWindow({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="overflow-hidden rounded-xl border border-black/10 bg-white shadow-[0_24px_60px_-30px_rgba(0,0,0,0.6)]">
+      <div className="flex items-center gap-1.5 border-b border-black/[0.06] bg-[#f6f7f9] px-4 py-2.5">
+        <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" />
+        <span className="h-2.5 w-2.5 rounded-full bg-[#febc2e]" />
+        <span className="h-2.5 w-2.5 rounded-full bg-[#28c840]" />
+        <span className="ml-3 font-sans text-[12px] text-[#9aa0ad]">New Message</span>
+      </div>
+      <div className="px-6 py-5">
+        <p className="font-sans text-[13px] leading-relaxed text-[#3a3f4a]">Hi there,</p>
+        <p className="mt-1 font-sans text-[13px] leading-relaxed text-[#9aa0ad]">
+          Thanks for reaching out. Happy to jump on a call this week.
+        </p>
+        <p className="mt-3 font-sans text-[13px] text-[#3a3f4a]">Best,</p>
+        <div className="my-4 h-px w-full bg-black/[0.06]" />
+        {children}
+      </div>
     </div>
   );
 }
