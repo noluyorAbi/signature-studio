@@ -66,9 +66,29 @@ you the right export per client:
   <tr><td><strong>Outlook desktop</strong></td><td>Shows the first frame, a clean static signature.</td></tr>
 </table>
 
+## Promo
+
+Advertisement videos are built programmatically with [Remotion](https://remotion.dev) in
+[`ads/`](ads) and rendered straight from the same design system.
+
+<div align="center">
+  <img src=".github/assets/ad.gif" alt="Signature Studio promo" width="420" />
+  <br/>
+  <sub>
+    <a href="ads/out/signature-studio-promo.mp4">Promo (1920x1080)</a> &middot;
+    <a href="ads/out/signature-studio-square.mp4">Square (1080x1080)</a>
+  </sub>
+</div>
+
+```bash
+cd ads && bun install
+bun run studio          # open the Remotion editor
+bun run render:promo    # render the 1080p promo
+```
+
 ## Tech
 
-`Next.js 16` (App Router) &middot; `React 19` &middot; `TypeScript` &middot; `Tailwind CSS v4` &middot; `Bun` &middot; `gifenc` &middot; HTML Canvas
+`Next.js 16` (App Router) &middot; `React 19` &middot; `TypeScript` &middot; `Tailwind CSS v4` &middot; `Bun` &middot; `gifenc` &middot; `Remotion` &middot; HTML Canvas
 
 ## Getting started
 
@@ -124,6 +144,10 @@ lib/
   cardSignature.ts           clickable card (embedded icons + links)
   iconCanvas.ts              shared canvas icon drawing
   usePersistentSignature.ts  localStorage-backed state
+ads/                         Remotion advertisement videos
+  src/Promo.tsx              1080p landscape ad
+  src/Square.tsx             square social ad
+  src/SignatureCardVideo.tsx animated signature, rebuilt for video
 ```
 
 </details>
