@@ -1,0 +1,109 @@
+"use client";
+
+import Link from "next/link";
+import { useMemo } from "react";
+import { usePersistentSignature } from "@/lib/usePersistentSignature";
+import { buildSignatureHtml } from "@/lib/exportHtml";
+import { renderTemplate, TEMPLATES } from "@/lib/templates";
+import { Editor } from "@/components/Editor";
+import { ExportPanel } from "@/components/ExportPanel";
+import { SparkleIcon } from "@/components/icons";
+
+export default function Studio() {
+  const { data, update, updateSocial, reset } = usePersistentSignature();
+  const html = useMemo(() => buildSignatureHtml(data), [data]);
+
+  return (
+    <div className="app-bg min-h-screen">
+      <header className="mx-auto flex max-w-[1280px] items-center justify-between px-6 pt-7 pb-4">
+        <Link href="/" className="flex items-center gap-2.5">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--color-accent)] text-white shadow-[0_6px_18px_-6px_var(--color-accent)]">
+            <SparkleIcon size={17} />
+          </span>
+          <div className="leading-tight">
+            <h1 className="font-display text-[15px] font-bold tracking-tight text-[var(--color-fg)]">Signature Studio</h1>
+            <p className="font-mono text-[10px] uppercase tracking-wider text-[var(--color-fg-subtle)]">Animated, email-safe signatures</p>
+          </div>
+        </Link>
+        <Link href="/" className="hidden rounded-full border border-[var(--color-border)] px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-[var(--color-fg-subtle)] transition-colors hover:text-[var(--color-fg)] sm:inline">
+          Home
+        </Link>
+      </header>
+
+      <main className="mx-auto grid max-w-[1280px] grid-cols-1 gap-6 px-6 pb-16 lg:grid-cols-[minmax(0,430px)_minmax(0,1fr)]">
+        <section className="scroll-thin rounded-2xl border border-[var(--color-border)] bg-[var(--color-panel)] p-5 lg:sticky lg:top-6 lg:max-h-[calc(100vh-128px)] lg:overflow-auto">
+          <Editor data={data} update={update} updateSocial={updateSocial} reset={reset} />
+        </section>
+
+        <section className="flex flex-col gap-6">
+          {/* Template picker */}
+          <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-panel)] p-5">
+            <div className="mb-3 flex items-baseline justify-between">
+              <h2 className="font-display text-sm font-semibold text-[var(--color-fg)]">Template</h2>
+              <span className="font-mono text-[10px] uppercase tracking-wider text-[var(--color-fg-subtle)]">{TEMPLATES.length} designs</span>
+            </div>
+            <div className="scroll-thin -mx-1 flex gap-3 overflow-x-auto px-1 pb-2">
+              {TEMPLATES.map((t) => {
+                const active = data.templateId === t.id;
+                return (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => update("templateId", t.id)}
+                    title={t.name}
+                    className={`group shrink-0 rounded-xl border p-1 transition-colors duration-150 ${
+                      active ? "border-[var(--color-accent)]" : "border-[var(--color-border)] hover:border-[var(--color-border-strong)]"
+                    }`}
+                  >
+                    <div className="flex h-[74px] w-[188px] items-center justify-center overflow-hidden rounded-lg bg-white">
+                      <div className="origin-center scale-[0.34]" dangerouslySetInnerHTML={{ __html: renderTemplate({ ...data, templateId: t.id }) }} />
+                    </div>
+                    <div className={`px-1 pt-1.5 pb-0.5 text-left text-[11px] font-medium ${active ? "text-[var(--color-accent-hot)]" : "text-[var(--color-fg-muted)]"}`}>{t.name}</div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Live preview */}
+          <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-panel)] p-5">
+            <h2 className="mb-4 font-display text-sm font-semibold text-[var(--color-fg)]">Live preview</h2>
+            <EmailWindow>
+              <div key={data.templateId} className="motion-safe:[animation:rise_0.4s_var(--ease-family)_both]" dangerouslySetInnerHTML={{ __html: html }} />
+            </EmailWindow>
+            <p className="mt-3 text-[11px] leading-relaxed text-[var(--color-fg-subtle)]">
+              Exactly the HTML you copy: table-based, inline-styled, Outlook-safe. Animate the portrait in the Export panel.
+            </p>
+          </div>
+
+          {/* Export */}
+          <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-panel)] p-5">
+            <h2 className="mb-4 font-display text-sm font-semibold text-[var(--color-fg)]">Export</h2>
+            <ExportPanel data={data} />
+          </div>
+        </section>
+      </main>
+    </div>
+  );
+}
+
+/** A faux email composer so the signature is seen in its real context. */
+function EmailWindow({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="overflow-hidden rounded-xl border border-black/10 bg-white shadow-[0_24px_60px_-30px_rgba(0,0,0,0.6)]">
+      <div className="flex items-center gap-1.5 border-b border-black/[0.06] bg-[#f6f7f9] px-4 py-2.5">
+        <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" />
+        <span className="h-2.5 w-2.5 rounded-full bg-[#febc2e]" />
+        <span className="h-2.5 w-2.5 rounded-full bg-[#28c840]" />
+        <span className="ml-3 font-sans text-[12px] text-[#9aa0ad]">New Message</span>
+      </div>
+      <div className="px-6 py-5">
+        <p className="font-sans text-[13px] leading-relaxed text-[#3a3f4a]">Hi there,</p>
+        <p className="mt-1 font-sans text-[13px] leading-relaxed text-[#9aa0ad]">Thanks for reaching out. Happy to jump on a call this week.</p>
+        <p className="mt-3 font-sans text-[13px] text-[#3a3f4a]">Best,</p>
+        <div className="my-4 h-px w-full bg-black/[0.06]" />
+        {children}
+      </div>
+    </div>
+  );
+}

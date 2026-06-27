@@ -31,6 +31,9 @@ export const SOCIAL_LABELS: Record<SocialKey, string> = {
 };
 
 export type SignatureData = {
+  /** Selected signature template id (see lib/templates.ts). */
+  templateId: string;
+
   // Identity
   name: string;
   title: string;

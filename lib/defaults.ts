@@ -6,6 +6,7 @@ import type { SignatureData } from "./types";
  * Location intentionally left empty (privacy).
  */
 export const DEFAULT_SIGNATURE: SignatureData = {
+  templateId: "card",
   name: "Alperen Adatepe",
   title: "Full-Stack Developer & Software Engineer",
   company: "",

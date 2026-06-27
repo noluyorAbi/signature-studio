@@ -80,6 +80,34 @@
   }
 }
 
+/* Landing motion utilities */
+.rise {
+  animation: rise 0.55s var(--ease-family) both;
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.6s var(--ease-family), transform 0.6s var(--ease-family);
+}
+.reveal.is-in {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .rise {
+    animation: none;
+  }
+}
+
 html {
   color-scheme: dark;
 }
