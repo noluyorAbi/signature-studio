@@ -88,21 +88,20 @@
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-6px); }
 }
+/* Visible by default (no-JS / crawlers see content); JS arms the hidden state,
+   then reveals on scroll. */
 .reveal {
+  transition: opacity 0.6s var(--ease-family), transform 0.6s var(--ease-family);
+}
+.reveal.is-armed {
   opacity: 0;
   transform: translateY(18px);
-  transition: opacity 0.6s var(--ease-family), transform 0.6s var(--ease-family);
 }
 .reveal.is-in {
   opacity: 1;
   transform: none;
 }
 @media (prefers-reduced-motion: reduce) {
-  .reveal {
-    opacity: 1;
-    transform: none;
-    transition: none;
-  }
   .rise {
     animation: none;
   }

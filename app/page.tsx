@@ -14,8 +14,17 @@ function useReveal<T extends HTMLElement>() {
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+    if (!("IntersectionObserver" in window)) return; // no IO: stay visible
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return; // show as-is
+    el.classList.add("is-armed");
     const io = new IntersectionObserver(
-      (entries) => entries.forEach((e) => e.isIntersecting && e.target.classList.add("is-in")),
+      (entries) =>
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add("is-in");
+            io.unobserve(e.target);
+          }
+        }),
       { threshold: 0.15 },
     );
     io.observe(el);
