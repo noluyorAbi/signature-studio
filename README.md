@@ -41,7 +41,7 @@ generated client-side.
 
 <table>
   <tr>
-    <td width="50%"><strong>10 templates</strong><br/>Distinct, selectable email-safe layouts: Card, Bordered, Left Portrait, Stacked, Banner, Monochrome, Compact, Editorial, Two Column, Underline.</td>
+    <td width="50%"><strong>9 templates</strong><br/>Distinct, selectable email-safe layouts: Card, Bordered, Left Portrait, Stacked, Banner, Monochrome, Compact, Editorial, Underline.</td>
     <td width="50%"><strong>Landing + builder</strong><br/>A marketing landing at <code>/</code>, the live builder at <code>/studio</code>.</td>
   </tr>
   <tr>

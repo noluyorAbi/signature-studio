@@ -81,7 +81,7 @@ function avatar(d: SignatureData, v: AccentRoles, size = 80, radius = 12, ring =
   const src = d.animatedPhotoUrl.trim() || d.photoUrl.trim();
   const border = ring ? "border:1px solid #e6e8ee;" : "border:0;";
   if (src) {
-    return `<img src="${esc(withProtocol(src))}" width="${size}" height="${size}" alt="${esc(d.name)}" style="display:block;width:${size}px;height:${size}px;border-radius:${radius}px;object-fit:cover;${border}outline:0;" />`;
+    return `<img src="${esc(withProtocol(src))}" width="${size}" height="${size}" alt="${esc(d.name)}" style="display:block;width:${size}px;min-width:${size}px;max-width:${size}px;height:${size}px;border-radius:${radius}px;object-fit:cover;${border}outline:0;" />`;
   }
   return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td align="center" valign="middle" width="${size}" height="${size}" bgcolor="${v.accentFill}" style="width:${size}px;height:${size}px;background-color:${v.accentFill};border-radius:${radius}px;color:${v.onAccent};font-family:${FONT};font-size:${Math.round(size * 0.38)}px;font-weight:bold;letter-spacing:1px;">${esc(initials(d.name))}</td></tr></table>`;
 }
@@ -252,21 +252,7 @@ function tplEditorial(d: SignatureData, v: AccentRoles): string {
   ].join("");
 }
 
-// 9. Two-Column — identity left, contact column right.
-function tplTwoColumn(d: SignatureData, v: AccentRoles): string {
-  const left = textTable(identityRows(d, v));
-  const right = textTable(contactRows(d, v));
-  return [
-    T_OPEN, "<tr>",
-    d.showAvatar ? `<td valign="middle" style="padding-right:18px;">${avatar(d, v, 78, 12)}</td>` : "",
-    `<td valign="top" style="padding-right:20px;">${left}</td>`,
-    `<td valign="top" width="1" style="width:1px;background-color:#e6e8ee;font-size:0;line-height:0;">&nbsp;</td>`,
-    `<td valign="top" style="padding-left:20px;">${right}</td>`,
-    "</tr>", "</table>",
-  ].join("");
-}
-
-// 10. Underline — name with an accent underline, horizontal.
+// Underline — name with an accent underline, horizontal.
 function tplUnderline(d: SignatureData, v: AccentRoles): string {
   const rows: string[] = [];
   if (d.brand.trim()) rows.push(tdRow(brandMark(d, v.accentText), "padding-bottom:6px;"));
@@ -293,7 +279,6 @@ export const TEMPLATES: Template[] = [
   { id: "mono", name: "Monochrome", oneLiner: "No colour, pure type", render: tplMono },
   { id: "compact", name: "Compact", oneLiner: "Smallest, dense lines", render: tplCompact },
   { id: "editorial", name: "Editorial", oneLiner: "Oversized name", render: tplEditorial },
-  { id: "two-column", name: "Two Column", oneLiner: "Identity + contact split", render: tplTwoColumn },
   { id: "underline", name: "Underline", oneLiner: "Underlined name, horizontal", render: tplUnderline },
 ];
 

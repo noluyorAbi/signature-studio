@@ -130,7 +130,7 @@ export default function Landing() {
         {/* showcase */}
         <div className="rise relative" style={{ animationDelay: "300ms" }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/app.png" alt="" aria-hidden className="pointer-events-none absolute -right-6 -top-10 w-[115%] max-w-none rotate-[-3deg] rounded-2xl opacity-30 blur-[2px] [mask-image:linear-gradient(to_bottom,#000_40%,transparent)]" />
+          <img src="/app.png" alt="" aria-hidden className="pointer-events-none absolute -right-6 -top-10 hidden w-[115%] max-w-none rotate-[-3deg] rounded-2xl opacity-30 blur-[2px] [mask-image:linear-gradient(to_bottom,#000_40%,transparent)] lg:block" />
           <div className="relative overflow-hidden rounded-xl border border-black/10 bg-white shadow-[0_40px_100px_-40px_rgba(0,0,0,0.7)] motion-safe:animate-[float_6s_ease-in-out_infinite]">
             <div className="flex items-center gap-1.5 border-b border-black/[0.06] bg-[#f6f7f9] px-4 py-2.5">
               <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" /><span className="h-2.5 w-2.5 rounded-full bg-[#febc2e]" /><span className="h-2.5 w-2.5 rounded-full bg-[#28c840]" />
@@ -176,22 +176,13 @@ export default function Landing() {
       <Section id="watch" eyebrow="In motion" heading="See it in action.">
         <Reveal>
           <div className="overflow-hidden rounded-2xl border border-[var(--color-border)] bg-black shadow-[0_40px_110px_-50px_rgba(0,0,0,0.85)]">
-            <video
-              src="/promo.mp4"
-              autoPlay
-              muted
-              loop
-              playsInline
-              preload="metadata"
-              aria-label="Signature Studio promo"
-              className="block w-full"
-            />
+            <ScrollVideo src="/promo.mp4" />
           </div>
         </Reveal>
       </Section>
 
       {/* TEMPLATES GALLERY */}
-      <Section id="templates" eyebrow="Templates" heading="Ten templates. Pick your starting point.">
+      <Section id="templates" eyebrow="Templates" heading={`${TEMPLATES.length} templates. Pick your starting point.`}>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {TEMPLATES.map((t, i) => (
             <Reveal key={t.id} delay={(i % 3) * 60}>
@@ -280,6 +271,26 @@ export default function Landing() {
   );
 }
 
+/** Plays when scrolled into view, pauses when out (autoplay on scroll). */
+function ScrollVideo({ src }: { src: string }) {
+  const ref = useRef<HTMLVideoElement>(null);
+  useEffect(() => {
+    const v = ref.current;
+    if (!v) return;
+    const io = new IntersectionObserver(
+      (entries) =>
+        entries.forEach((e) => {
+          if (e.isIntersecting) v.play().catch(() => {});
+          else v.pause();
+        }),
+      { threshold: 0.4 },
+    );
+    io.observe(v);
+    return () => io.disconnect();
+  }, []);
+  return <video ref={ref} src={src} muted loop playsInline preload="metadata" aria-label="Signature Studio promo" className="block w-full" />;
+}
+
 function Section({ id, eyebrow, heading, children }: { id: string; eyebrow: string; heading: string; children: React.ReactNode }) {
   return (
     <section id={id} className="mx-auto max-w-[1200px] scroll-mt-20 px-6 py-24">
@@ -296,7 +307,7 @@ function Section({ id, eyebrow, heading, children }: { id: string; eyebrow: stri
 
 const FEATURES = [
   { title: "Live editor", body: "Every field updates an instant preview. Sensible defaults, nothing blank.", icon: <SparkleIcon size={18} /> },
-  { title: "Ten templates", body: "Distinct, professional layouts. Pick one and make it yours.", icon: <CodeIcon size={18} /> },
+  { title: `${TEMPLATES.length} templates`, body: "Distinct, professional layouts. Pick one and make it yours.", icon: <CodeIcon size={18} /> },
   { title: "Animated portrait", body: "A diagonal strip-reveal, drawn on canvas and encoded as a GIF.", icon: <SparkleIcon size={18} /> },
   { title: "Clickable card", body: "Every region a real link: icons, email, website. Apple Mail ready.", icon: <ExternalIcon size={18} /> },
   { title: "Email-safe export", body: "Table-based, inline-styled, Outlook-safe. Around three kilobytes.", icon: <MailIcon size={18} /> },

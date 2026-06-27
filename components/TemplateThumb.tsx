@@ -43,11 +43,21 @@ export function TemplateThumb({
   }, [html, pad, max]);
 
   return (
-    <div ref={wrap} className="relative flex h-full w-full items-center justify-center overflow-hidden bg-white">
+    <div ref={wrap} className="relative h-full w-full overflow-hidden bg-white">
       <div
-        style={{ transform: scale ? `scale(${scale})` : undefined, opacity: scale ? 1 : 0, transformOrigin: "center", transition: "opacity 0.2s ease" }}
+        style={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: `translate(-50%, -50%) scale(${scale || 0})`,
+          transformOrigin: "center",
+          opacity: scale ? 1 : 0,
+          transition: "opacity 0.2s ease",
+        }}
       >
-        <div ref={inner} className="inline-block" dangerouslySetInnerHTML={{ __html: html }} />
+        {/* width:max-content -> renders the signature at its natural width, never
+            constrained by the parent, so the table layout and photo stay correct. */}
+        <div ref={inner} style={{ width: "max-content" }} dangerouslySetInnerHTML={{ __html: html }} />
       </div>
     </div>
   );

@@ -146,17 +146,17 @@ export const Promo: React.FC = () => {
   return (
     <AbsoluteFill style={{ backgroundColor: C.bg }}>
       <Backdrop />
-      <Sequence durationInFrames={95}>
-        <Hook dur={95} />
+      <Sequence durationInFrames={115}>
+        <Hook dur={115} />
       </Sequence>
-      <Sequence from={85} durationInFrames={215}>
-        <Hero dur={215} />
+      <Sequence from={105} durationInFrames={285}>
+        <Hero dur={285} />
       </Sequence>
-      <Sequence from={288} durationInFrames={92}>
-        <Features dur={92} />
+      <Sequence from={380} durationInFrames={115}>
+        <Features dur={115} />
       </Sequence>
-      <Sequence from={368} durationInFrames={82}>
-        <CTA dur={82} />
+      <Sequence from={488} durationInFrames={112}>
+        <CTA dur={112} />
       </Sequence>
     </AbsoluteFill>
   );
