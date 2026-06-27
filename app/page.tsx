@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { TEMPLATES, renderTemplate } from "@/lib/templates";
+import { TEMPLATES } from "@/lib/templates";
 import { DEFAULT_SIGNATURE } from "@/lib/defaults";
+import { TemplateThumb } from "@/components/TemplateThumb";
 import { SparkleIcon, GithubIcon, CheckIcon, CopyIcon, CodeIcon, ExternalIcon, MailIcon } from "@/components/icons";
 
 const REPO = "https://github.com/noluyorAbi/signature-studio";
@@ -171,19 +172,34 @@ export default function Landing() {
         </div>
       </Section>
 
+      {/* WATCH */}
+      <Section id="watch" eyebrow="In motion" heading="See it in action.">
+        <Reveal>
+          <div className="overflow-hidden rounded-2xl border border-[var(--color-border)] bg-black shadow-[0_40px_110px_-50px_rgba(0,0,0,0.85)]">
+            <video
+              src="/promo.mp4"
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="metadata"
+              aria-label="Signature Studio promo"
+              className="block w-full"
+            />
+          </div>
+        </Reveal>
+      </Section>
+
       {/* TEMPLATES GALLERY */}
       <Section id="templates" eyebrow="Templates" heading="Ten templates. Pick your starting point.">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {TEMPLATES.map((t, i) => (
             <Reveal key={t.id} delay={(i % 3) * 60}>
               <Link href="/studio" prefetch className="group block overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-panel)] transition-colors duration-200 hover:border-[var(--color-border-strong)]">
-                <div className="flex h-[150px] items-center justify-center overflow-hidden bg-white p-4">
-                  <div
-                    className="origin-center scale-[0.64]"
-                    dangerouslySetInnerHTML={{ __html: renderTemplate({ ...DEFAULT_SIGNATURE, templateId: t.id }) }}
-                  />
+                <div className="h-[210px] border-b border-black/[0.04]">
+                  <TemplateThumb data={DEFAULT_SIGNATURE} templateId={t.id} pad={22} />
                 </div>
-                <div className="flex items-center justify-between border-t border-[var(--color-border)] px-4 py-3">
+                <div className="flex items-center justify-between px-4 py-3">
                   <div>
                     <div className="font-display text-[13px] font-semibold text-[var(--color-fg)]">{t.name}</div>
                     <div className="text-[11px] text-[var(--color-fg-subtle)]">{t.oneLiner}</div>

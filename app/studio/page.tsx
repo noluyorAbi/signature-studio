@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useMemo } from "react";
 import { usePersistentSignature } from "@/lib/usePersistentSignature";
 import { buildSignatureHtml } from "@/lib/exportHtml";
-import { renderTemplate, TEMPLATES } from "@/lib/templates";
+import { TEMPLATES } from "@/lib/templates";
+import { TemplateThumb } from "@/components/TemplateThumb";
 import { Editor } from "@/components/Editor";
 import { ExportPanel } from "@/components/ExportPanel";
 import { SparkleIcon } from "@/components/icons";
@@ -55,8 +56,8 @@ export default function Studio() {
                       active ? "border-[var(--color-accent)]" : "border-[var(--color-border)] hover:border-[var(--color-border-strong)]"
                     }`}
                   >
-                    <div className="flex h-[74px] w-[188px] items-center justify-center overflow-hidden rounded-lg bg-white">
-                      <div className="origin-center scale-[0.34]" dangerouslySetInnerHTML={{ __html: renderTemplate({ ...data, templateId: t.id }) }} />
+                    <div className="h-[74px] w-[188px] overflow-hidden rounded-lg">
+                      <TemplateThumb data={data} templateId={t.id} pad={9} />
                     </div>
                     <div className={`px-1 pt-1.5 pb-0.5 text-left text-[11px] font-medium ${active ? "text-[var(--color-accent-hot)]" : "text-[var(--color-fg-muted)]"}`}>{t.name}</div>
                   </button>
