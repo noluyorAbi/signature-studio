@@ -3,7 +3,7 @@ import { AbsoluteFill, interpolate, Sequence, useCurrentFrame, Easing } from "re
 import { Backdrop } from "./Backdrop";
 import { SignatureCardVideo } from "./SignatureCardVideo";
 import { C } from "./theme";
-import { display, sans, mono } from "./fonts";
+import { display, mono } from "./fonts";
 
 const rise = (frame: number, delay: number, dur = 14, dist = 24) => {
   const o = interpolate(frame, [delay, delay + dur], [0, 1], {

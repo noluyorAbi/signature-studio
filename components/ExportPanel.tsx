@@ -143,7 +143,7 @@ export function ExportPanel({ data }: { data: SignatureData }) {
           <ol className="flex flex-col gap-3 text-[13px] leading-relaxed text-[var(--color-fg-muted)]">
             <InstallStep client="Gmail">
               Settings (gear) → See all settings → General → Signature → Create new → paste
-              ({mod()}+V) → Save changes.
+              (Cmd/Ctrl+V) → Save changes.
             </InstallStep>
             <InstallStep client="Outlook (web)">
               Settings → Mail → Compose and reply → paste into the signature box → Save.
@@ -257,11 +257,6 @@ export function ExportPanel({ data }: { data: SignatureData }) {
       </div>
     </div>
   );
-}
-
-function mod() {
-  if (typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform)) return "Cmd";
-  return "Ctrl";
 }
 
 function TabButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
