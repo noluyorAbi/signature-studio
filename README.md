@@ -103,6 +103,13 @@ bun run gen          # write a static signature .html
 bun run gen:animated # write a signature with an embedded animated portrait
 ```
 
+## Guides
+
+- **[User Guide](docs/USER_GUIDE.md)** &middot; build and install your signature, with the
+  animation rules per mail client.
+- **[Agent Guide](AGENTS.md)** &middot; architecture, the email-safe invariants, and how to
+  extend the pipeline.
+
 ## How it works
 
 - **One source, two render paths.** A single `SignatureData` object feeds an animated React
