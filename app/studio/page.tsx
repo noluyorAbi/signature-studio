@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { usePersistentSignature } from "@/lib/usePersistentSignature";
 import type { SignatureData } from "@/lib/types";
 import { buildSignatureHtml } from "@/lib/exportHtml";
@@ -10,11 +10,26 @@ import { TEMPLATES } from "@/lib/templates";
 import { TemplateThumb } from "@/components/TemplateThumb";
 import { Editor } from "@/components/Editor";
 import { ExportPanel } from "@/components/ExportPanel";
-import { SparkleIcon } from "@/components/icons";
+import { SparkleIcon, ResetIcon } from "@/components/icons";
 
 export default function Studio() {
-  const { data, update, updateSocial, setData, reset } = usePersistentSignature();
+  const { data, update, updateSocial, setData, reset, undo, redo, canUndo, canRedo } = usePersistentSignature();
   const html = useMemo(() => buildSignatureHtml(data), [data]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!(e.metaKey || e.ctrlKey)) return;
+      if (e.key === "z" && !e.shiftKey) {
+        e.preventDefault();
+        undo();
+      } else if ((e.key === "z" && e.shiftKey) || e.key === "y") {
+        e.preventDefault();
+        redo();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [undo, redo]);
 
   return (
     <div className="app-bg min-h-screen">
@@ -28,9 +43,31 @@ export default function Studio() {
             <p className="font-mono text-[10px] uppercase tracking-wider text-[var(--color-fg-subtle)]">Animated, email-safe signatures</p>
           </div>
         </Link>
-        <Link href="/" className="hidden rounded-full border border-[var(--color-border)] px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-[var(--color-fg-subtle)] transition-colors hover:text-[var(--color-fg)] sm:inline">
-          Home
-        </Link>
+        <div className="flex items-center gap-2">
+          <div className="flex overflow-hidden rounded-lg border border-[var(--color-border)]">
+            <button
+              type="button"
+              onClick={undo}
+              disabled={!canUndo}
+              title="Undo (Cmd/Ctrl+Z)"
+              className="px-2.5 py-1.5 text-[var(--color-fg-muted)] transition-colors hover:text-[var(--color-fg)] disabled:opacity-30"
+            >
+              <ResetIcon size={14} />
+            </button>
+            <button
+              type="button"
+              onClick={redo}
+              disabled={!canRedo}
+              title="Redo (Cmd/Ctrl+Shift+Z)"
+              className="border-l border-[var(--color-border)] px-2.5 py-1.5 text-[var(--color-fg-muted)] transition-colors hover:text-[var(--color-fg)] disabled:opacity-30"
+            >
+              <ResetIcon size={14} className="-scale-x-100" />
+            </button>
+          </div>
+          <Link href="/" className="hidden rounded-full border border-[var(--color-border)] px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-[var(--color-fg-subtle)] transition-colors hover:text-[var(--color-fg)] sm:inline">
+            Home
+          </Link>
+        </div>
       </header>
 
       <main className="mx-auto grid max-w-[1280px] grid-cols-1 gap-6 px-6 pb-16 lg:grid-cols-[minmax(0,430px)_minmax(0,1fr)]">

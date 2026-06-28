@@ -1,4 +1,4 @@
-import type { SignatureData } from "./types";
+import { SOCIAL_ORDER, type SignatureData } from "./types";
 
 /**
  * Pre-filled with the adatepe.dev personal brand.
@@ -41,6 +41,7 @@ export const DEFAULT_SIGNATURE: SignatureData = {
     instagram: "",
     youtube: "",
   },
+  socialOrder: [...SOCIAL_ORDER],
 };
 
 export const STORAGE_KEY = "signature-studio:v1";

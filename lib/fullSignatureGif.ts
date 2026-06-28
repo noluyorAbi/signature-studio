@@ -3,7 +3,7 @@
 import { GIFEncoder, quantize, applyPalette } from "gifenc";
 import { deriveAccent } from "./accent";
 import { SIG } from "./signatureTokens";
-import { SOCIAL_ORDER, type SignatureData } from "./types";
+import { socialKeysInOrder, type SignatureData } from "./types";
 import { drawSocial, drawGlobe, drawMail } from "./iconCanvas";
 
 /**
@@ -86,7 +86,7 @@ export async function buildFullSignatureGif(
   const textY = Math.round(P + (contentH - textH) / 2);
   const photoY = Math.round(P + (contentH - photo) / 2);
 
-  const navKeys = SOCIAL_ORDER.filter((k) => data.socials[k]?.trim());
+  const navKeys = socialKeysInOrder(data).filter((k) => data.socials[k]?.trim());
 
   const W = Math.round(width * PR);
   const H = Math.round(height * PR);

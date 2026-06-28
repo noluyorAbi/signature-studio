@@ -1,6 +1,6 @@
 import { deriveAccent } from "./accent";
 import { SIG, SIG_FONT } from "./signatureTokens";
-import { SOCIAL_ORDER, SOCIAL_LABELS, FONT_STACKS, DENSITY_SCALE, type SignatureData, type Roundness } from "./types";
+import { SOCIAL_LABELS, FONT_STACKS, DENSITY_SCALE, socialKeysInOrder, type SignatureData, type Roundness } from "./types";
 
 /* ------------------------------------------------------------------ */
 /*  Signature template system.                                         */
@@ -75,7 +75,7 @@ function websiteA(d: SignatureData, v: AccentRoles, size = 12): string {
   return a(d.website, stripProto(d.website), v.accentText, `font-family:${FONT};font-size:${size}px;font-weight:600;`);
 }
 function socialInline(d: SignatureData, color: string, size = 12): string {
-  const items = SOCIAL_ORDER.filter((k) => d.socials[k]?.trim()).map((k) =>
+  const items = socialKeysInOrder(d).filter((k) => d.socials[k]?.trim()).map((k) =>
     a(d.socials[k], SOCIAL_LABELS[k], color, `font-family:${FONT};font-size:${size}px;font-weight:600;`),
   );
   if (!items.length) return "";

@@ -2,11 +2,11 @@
 
 import { useRef } from "react";
 import {
-  SOCIAL_ORDER,
   SOCIAL_LABELS,
   FONT_LABELS,
   ROUNDNESS_LABELS,
   DENSITY_LABELS,
+  socialKeysInOrder,
   type SignatureData,
   type SocialKey,
   type FontKey,
@@ -38,6 +38,16 @@ export function Editor({ data, update, updateSocial, setData, reset }: EditorPro
     } catch {
       /* ignore bad file */
     }
+  }
+
+  function moveSocial(k: SocialKey, dir: -1 | 1) {
+    const order = socialKeysInOrder(data);
+    const i = order.indexOf(k);
+    const j = i + dir;
+    if (j < 0 || j >= order.length) return;
+    const next = [...order];
+    [next[i], next[j]] = [next[j], next[i]];
+    update("socialOrder", next);
   }
 
   return (
@@ -84,15 +94,38 @@ export function Editor({ data, update, updateSocial, setData, reset }: EditorPro
         </div>
       </Section>
 
-      <Section title="Links" hint="Only filled links appear">
-        {SOCIAL_ORDER.map((k) => (
-          <Field
-            key={k}
-            label={SOCIAL_LABELS[k]}
-            value={data.socials[k]}
-            onChange={(v) => updateSocial(k, v)}
-            placeholder={`https://… (${SOCIAL_LABELS[k].toLowerCase()})`}
-          />
+      <Section title="Links" hint="Drag order via arrows">
+        {socialKeysInOrder(data).map((k, i, arr) => (
+          <div key={k} className="flex items-end gap-2">
+            <div className="flex-1">
+              <Field
+                label={SOCIAL_LABELS[k]}
+                value={data.socials[k]}
+                onChange={(v) => updateSocial(k, v)}
+                placeholder={`https://… (${SOCIAL_LABELS[k].toLowerCase()})`}
+              />
+            </div>
+            <div className="mb-px flex flex-col">
+              <button
+                type="button"
+                onClick={() => moveSocial(k, -1)}
+                disabled={i === 0}
+                aria-label={`Move ${SOCIAL_LABELS[k]} up`}
+                className="px-1.5 text-[10px] text-[var(--color-fg-subtle)] transition-colors hover:text-[var(--color-fg)] disabled:opacity-25"
+              >
+                ▲
+              </button>
+              <button
+                type="button"
+                onClick={() => moveSocial(k, 1)}
+                disabled={i === arr.length - 1}
+                aria-label={`Move ${SOCIAL_LABELS[k]} down`}
+                className="px-1.5 text-[10px] text-[var(--color-fg-subtle)] transition-colors hover:text-[var(--color-fg)] disabled:opacity-25"
+              >
+                ▼
+              </button>
+            </div>
+          </div>
         ))}
       </Section>
 

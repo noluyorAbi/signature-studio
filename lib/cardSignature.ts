@@ -4,7 +4,7 @@ import { deriveAccent } from "./accent";
 import { SIG } from "./signatureTokens";
 import { buildPortraitGif } from "./portraitGif";
 import { renderIconDataUrl } from "./iconCanvas";
-import { SOCIAL_ORDER, SOCIAL_LABELS, type SignatureData } from "./types";
+import { SOCIAL_LABELS, socialKeysInOrder, type SignatureData } from "./types";
 
 /**
  * Clickable, animated email signature in the CARD layout (icon nav | divider |
@@ -50,7 +50,7 @@ export async function buildClickableCardSignature(data: SignatureData): Promise<
   const globeIcon = renderIconDataUrl("website", accentText, 14);
 
   // ---- social icon nav (clickable image links) ----
-  const navKeys = SOCIAL_ORDER.filter((k) => data.socials[k]?.trim());
+  const navKeys = socialKeysInOrder(data).filter((k) => data.socials[k]?.trim());
   const navRows = navKeys
     .map((k) => {
       const icon = renderIconDataUrl(k, SIG.iconRest, 18);

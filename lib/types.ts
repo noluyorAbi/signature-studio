@@ -86,4 +86,13 @@ export type SignatureData = {
 
   // Links — empty string means "hidden"
   socials: Record<SocialKey, string>;
+  /** Render order of the social links; defaults to SOCIAL_ORDER. */
+  socialOrder: SocialKey[];
 };
+
+/** The social keys in the signature's chosen order, with any missing appended. */
+export function socialKeysInOrder(d: Pick<SignatureData, "socialOrder">): SocialKey[] {
+  const order = (d.socialOrder?.length ? d.socialOrder : SOCIAL_ORDER).filter((k) => SOCIAL_ORDER.includes(k));
+  const missing = SOCIAL_ORDER.filter((k) => !order.includes(k));
+  return [...order, ...missing];
+}

@@ -37,6 +37,8 @@ export function ExportPanel({ data }: { data: SignatureData }) {
   const [whole, setWhole] = useState<Job>("idle");
   const [wholeUrl, setWholeUrl] = useState<string | null>(null);
   const [wholeData, setWholeData] = useState<{ dataUrl: string; width: number; blob: Blob } | null>(null);
+  const [gifFrames, setGifFrames] = useState(18);
+  const [gifWidth, setGifWidth] = useState(540);
 
   function flash(which: "sig" | "code" | "whole" | "card" | "text") {
     setCopied(which);
@@ -95,7 +97,7 @@ export function ExportPanel({ data }: { data: SignatureData }) {
   async function generateWhole() {
     setWhole("busy");
     try {
-      const { blob, dataUrl, width } = await buildFullSignatureGif(data);
+      const { blob, dataUrl, width } = await buildFullSignatureGif(data, { width: gifWidth, frames: gifFrames });
       if (wholeUrl) URL.revokeObjectURL(wholeUrl);
       setWholeUrl(URL.createObjectURL(blob));
       setWholeData({ dataUrl, width, blob });
@@ -256,6 +258,16 @@ export function ExportPanel({ data }: { data: SignatureData }) {
               <SparkleIcon size={13} />
               {whole === "busy" ? "Rendering…" : whole === "done" ? "Regenerate" : "Generate"}
             </button>
+          </div>
+          <div className="mt-3 grid grid-cols-2 gap-3">
+            <label className="flex flex-col gap-1">
+              <span className="flex justify-between font-mono text-[10px] uppercase tracking-wider text-[var(--color-fg-subtle)]">Reveal<span>{gifFrames}f</span></span>
+              <input type="range" min={8} max={32} value={gifFrames} onChange={(e) => setGifFrames(Number(e.target.value))} className="accent-[var(--color-accent)]" />
+            </label>
+            <label className="flex flex-col gap-1">
+              <span className="flex justify-between font-mono text-[10px] uppercase tracking-wider text-[var(--color-fg-subtle)]">Width<span>{gifWidth}px</span></span>
+              <input type="range" min={420} max={680} step={20} value={gifWidth} onChange={(e) => setGifWidth(Number(e.target.value))} className="accent-[var(--color-accent)]" />
+            </label>
           </div>
           {wholeUrl && wholeData && (
             <div className="mt-3 flex flex-col gap-2">
