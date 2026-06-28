@@ -15,7 +15,7 @@ A live, no-backend builder: edit on the left, watch a real-time preview, export 
 </p>
 
 <p>
-  <a href="https://signature-studio-six.vercel.app"><img alt="Live Demo" src="https://img.shields.io/badge/Live_Demo-signature--studio.vercel.app-000000?style=for-the-badge&logo=vercel&logoColor=white" /></a>
+  <a href="https://signaturestudio.adatepe.dev"><img alt="Live Demo" src="https://img.shields.io/badge/Live_Demo-signaturestudio.adatepe.dev-000000?style=for-the-badge&logo=vercel&logoColor=white" /></a>
 </p>
 
 <br/>
