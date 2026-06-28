@@ -30,6 +30,23 @@ export const SOCIAL_LABELS: Record<SocialKey, string> = {
   youtube: "YouTube",
 };
 
+export type FontKey = "sans" | "modern" | "classic" | "mono" | "system";
+export type Roundness = "square" | "soft" | "round";
+export type Density = "compact" | "cozy" | "spacious";
+
+/** Web-safe font stacks (no webfonts, email-safe). */
+export const FONT_STACKS: Record<FontKey, string> = {
+  sans: "Arial, 'Helvetica Neue', Helvetica, sans-serif",
+  modern: "'Segoe UI', 'Helvetica Neue', Arial, sans-serif",
+  classic: "Georgia, 'Times New Roman', Times, serif",
+  mono: "'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace",
+  system: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif",
+};
+export const FONT_LABELS: Record<FontKey, string> = { sans: "Arial", modern: "Segoe", classic: "Georgia", mono: "Mono", system: "System" };
+export const ROUNDNESS_LABELS: Record<Roundness, string> = { square: "Square", soft: "Soft", round: "Round" };
+export const DENSITY_LABELS: Record<Density, string> = { compact: "Compact", cozy: "Cozy", spacious: "Spacious" };
+export const DENSITY_SCALE: Record<Density, number> = { compact: 0.82, cozy: 1, spacious: 1.18 };
+
 export type SignatureData = {
   /** Selected signature template id (see lib/templates.ts). */
   templateId: string;
@@ -55,6 +72,17 @@ export type SignatureData = {
   showAvatar: boolean;
   showVerifiedBadge: boolean;
   accentColor: string;
+
+  // Customization axes
+  fontStack: FontKey;
+  roundness: Roundness;
+  density: Density;
+
+  // Branding
+  logoUrl: string;
+  ctaLabel: string;
+  ctaUrl: string;
+  disclaimer: string;
 
   // Links — empty string means "hidden"
   socials: Record<SocialKey, string>;

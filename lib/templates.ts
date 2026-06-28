@@ -1,6 +1,6 @@
 import { deriveAccent } from "./accent";
 import { SIG, SIG_FONT } from "./signatureTokens";
-import { SOCIAL_ORDER, SOCIAL_LABELS, type SignatureData } from "./types";
+import { SOCIAL_ORDER, SOCIAL_LABELS, FONT_STACKS, DENSITY_SCALE, type SignatureData, type Roundness } from "./types";
 
 /* ------------------------------------------------------------------ */
 /*  Signature template system.                                         */
@@ -17,7 +17,12 @@ export type Template = {
   render: (d: SignatureData, v: AccentRoles) => string;
 };
 
-const FONT = SIG_FONT;
+// Per-render style context (set synchronously in renderTemplate before drawing).
+let FONT = SIG_FONT;
+let RND: Roundness = "soft";
+let SCALE = 1;
+const radiusFor = (size: number, fallback: number) =>
+  RND === "round" ? Math.round(size / 2) : RND === "square" ? 2 : fallback;
 const C = { name: SIG.name, title: SIG.title, tagline: SIG.tagline, meta: SIG.meta, sep: SIG.divider };
 
 /* ---- low-level helpers ---- */
@@ -78,15 +83,19 @@ function socialInline(d: SignatureData, color: string, size = 12): string {
 }
 function avatar(d: SignatureData, v: AccentRoles, size = 80, radius = 12, ring = true): string {
   if (!d.showAvatar) return "";
+  const r = radiusFor(size, radius);
   const src = d.animatedPhotoUrl.trim() || d.photoUrl.trim();
   const border = ring ? "border:1px solid #e6e8ee;" : "border:0;";
   if (src) {
-    return `<img src="${esc(withProtocol(src))}" width="${size}" height="${size}" alt="${esc(d.name)}" style="display:block;width:${size}px;min-width:${size}px;max-width:${size}px;height:${size}px;border-radius:${radius}px;object-fit:cover;${border}outline:0;" />`;
+    return `<img src="${esc(withProtocol(src))}" width="${size}" height="${size}" alt="${esc(d.name)}" style="display:block;width:${size}px;min-width:${size}px;max-width:${size}px;height:${size}px;border-radius:${r}px;object-fit:cover;${border}outline:0;" />`;
   }
-  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td align="center" valign="middle" width="${size}" height="${size}" bgcolor="${v.accentFill}" style="width:${size}px;height:${size}px;background-color:${v.accentFill};border-radius:${radius}px;color:${v.onAccent};font-family:${FONT};font-size:${Math.round(size * 0.38)}px;font-weight:bold;letter-spacing:1px;">${esc(initials(d.name))}</td></tr></table>`;
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td align="center" valign="middle" width="${size}" height="${size}" bgcolor="${v.accentFill}" style="width:${size}px;height:${size}px;background-color:${v.accentFill};border-radius:${r}px;color:${v.onAccent};font-family:${FONT};font-size:${Math.round(size * 0.38)}px;font-weight:bold;letter-spacing:1px;">${esc(initials(d.name))}</td></tr></table>`;
 }
 const T_OPEN = `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;background-color:#ffffff;">`;
-const spacer = (h: number) => `<tr><td style="font-size:0;line-height:${h}px;height:${h}px;mso-line-height-rule:exactly;">&nbsp;</td></tr>`;
+const spacer = (h: number) => {
+  const hh = Math.max(1, Math.round(h * SCALE));
+  return `<tr><td style="font-size:0;line-height:${hh}px;height:${hh}px;mso-line-height-rule:exactly;">&nbsp;</td></tr>`;
+};
 const tdRow = (inner: string, pad = "") => `<tr><td style="${pad}">${inner}</td></tr>`;
 
 /* ============================== TEMPLATES ============================== */
@@ -286,7 +295,37 @@ export function getTemplate(id: string): Template {
   return TEMPLATES.find((t) => t.id === id) ?? TEMPLATES[0];
 }
 
+/* ---- optional branding blocks (logo above, CTA + disclaimer below) ---- */
+function logoBlock(d: SignatureData): string {
+  if (!d.logoUrl.trim()) return "";
+  return `<img src="${esc(withProtocol(d.logoUrl))}" alt="${esc(d.company || d.brand || d.name)}" height="34" style="display:block;height:34px;width:auto;max-width:220px;border:0;outline:0;" />`;
+}
+function ctaBlock(d: SignatureData, v: AccentRoles): string {
+  if (!d.ctaLabel.trim() || !d.ctaUrl.trim()) return "";
+  const r = radiusFor(40, 8);
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;"><tr><td bgcolor="${v.accentFill}" style="background-color:${v.accentFill};border-radius:${r}px;"><a href="${esc(withProtocol(d.ctaUrl))}" target="_blank" rel="noopener" style="display:inline-block;padding:9px 18px;font-family:${FONT};font-size:12px;font-weight:bold;color:${v.onAccent};text-decoration:none;">${esc(d.ctaLabel)}</a></td></tr></table>`;
+}
+function disclaimerBlock(d: SignatureData): string {
+  if (!d.disclaimer.trim()) return "";
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td style="border-top:1px solid #eef0f3;padding-top:8px;font-family:${FONT};font-size:10px;line-height:14px;color:#9aa0ad;mso-line-height-rule:exactly;">${esc(d.disclaimer)}</td></tr></table>`;
+}
+
 export function renderTemplate(d: SignatureData): string {
   const v = deriveAccent(d.accentColor);
-  return getTemplate(d.templateId).render(d, v);
+  FONT = FONT_STACKS[d.fontStack] ?? SIG_FONT;
+  RND = d.roundness ?? "soft";
+  SCALE = DENSITY_SCALE[d.density] ?? 1;
+
+  const sig = getTemplate(d.templateId).render(d, v);
+  const logo = logoBlock(d);
+  const cta = ctaBlock(d, v);
+  const disc = disclaimerBlock(d);
+  if (!logo && !cta && !disc) return sig;
+
+  const rows: string[] = [];
+  if (logo) rows.push(`<tr><td style="padding-bottom:14px;">${logo}</td></tr>`);
+  rows.push(`<tr><td>${sig}</td></tr>`);
+  if (cta) rows.push(`<tr><td style="padding-top:14px;">${cta}</td></tr>`);
+  if (disc) rows.push(`<tr><td style="padding-top:14px;">${disc}</td></tr>`);
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;background-color:#ffffff;">${rows.join("")}</table>`;
 }

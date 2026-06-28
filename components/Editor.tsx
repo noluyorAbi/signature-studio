@@ -1,7 +1,21 @@
 "use client";
 
-import { SOCIAL_ORDER, SOCIAL_LABELS, type SignatureData, type SocialKey } from "@/lib/types";
+import { useRef } from "react";
+import {
+  SOCIAL_ORDER,
+  SOCIAL_LABELS,
+  FONT_LABELS,
+  ROUNDNESS_LABELS,
+  DENSITY_LABELS,
+  type SignatureData,
+  type SocialKey,
+  type FontKey,
+  type Roundness,
+  type Density,
+} from "@/lib/types";
 import { deriveAccent } from "@/lib/accent";
+import { PRESETS, applyPreset } from "@/lib/presets";
+import { fileToSquareDataUrl } from "@/lib/image";
 import { ResetIcon } from "./icons";
 
 const ACCENTS = ["#4d7dff", "#6e56cf", "#2dd4bf", "#f97316", "#ec4899", "#22c55e"];
@@ -10,12 +24,45 @@ type EditorProps = {
   data: SignatureData;
   update: <K extends keyof SignatureData>(key: K, value: SignatureData[K]) => void;
   updateSocial: (key: SocialKey, value: string) => void;
+  setData: (d: SignatureData) => void;
   reset: () => void;
 };
 
-export function Editor({ data, update, updateSocial, reset }: EditorProps) {
+export function Editor({ data, update, updateSocial, setData, reset }: EditorProps) {
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  async function onPickPhoto(file: File | undefined) {
+    if (!file) return;
+    try {
+      update("photoUrl", await fileToSquareDataUrl(file));
+    } catch {
+      /* ignore bad file */
+    }
+  }
+
   return (
     <div className="flex flex-col gap-7">
+      <Section title="Preset" hint="One-click skins">
+        <div className="scroll-thin -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+          {PRESETS.map((p) => {
+            const active = data.templateId === p.templateId && data.accentColor.toLowerCase() === p.accentColor.toLowerCase() && data.fontStack === p.fontStack;
+            return (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => setData(applyPreset(data, p))}
+                className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[12px] font-medium transition-colors duration-150 ${
+                  active ? "border-[var(--color-accent)] text-[var(--color-fg)]" : "border-[var(--color-border)] text-[var(--color-fg-muted)] hover:text-[var(--color-fg)]"
+                }`}
+              >
+                <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: p.accentColor }} />
+                {p.name}
+              </button>
+            );
+          })}
+        </div>
+      </Section>
+
       <Section title="Identity" hint="Who you are">
         <Field label="Full name" value={data.name} onChange={(v) => update("name", v)} placeholder="Alperen Adatepe" />
         <Field label="Title" value={data.title} onChange={(v) => update("title", v)} placeholder="Full-Stack Developer" />
@@ -87,13 +134,33 @@ export function Editor({ data, update, updateSocial, reset }: EditorProps) {
           )}
         </div>
 
-        <Field
-          label="Profile photo URL"
-          value={data.photoUrl}
-          onChange={(v) => update("photoUrl", v)}
-          placeholder="https://…/photo.jpg (square, hosted)"
-          hint="Empty shows a monogram tile"
-        />
+        <Seg label="Font" value={data.fontStack} options={Object.entries(FONT_LABELS)} onChange={(v) => update("fontStack", v as FontKey)} />
+        <Seg label="Shape" value={data.roundness} options={Object.entries(ROUNDNESS_LABELS)} onChange={(v) => update("roundness", v as Roundness)} />
+        <Seg label="Density" value={data.density} options={Object.entries(DENSITY_LABELS)} onChange={(v) => update("density", v as Density)} />
+
+        <div>
+          <div className="flex items-end justify-between">
+            <FieldLabel>Profile photo</FieldLabel>
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              className="mb-1.5 rounded-md border border-[var(--color-border)] px-2 py-0.5 text-[10px] font-medium text-[var(--color-fg-muted)] transition-colors hover:text-[var(--color-fg)]"
+            >
+              Upload
+            </button>
+          </div>
+          <input
+            type="text"
+            value={data.photoUrl.startsWith("data:") ? "(uploaded image)" : data.photoUrl}
+            readOnly={data.photoUrl.startsWith("data:")}
+            placeholder="https://…/photo.jpg (square, hosted)"
+            onChange={(e) => update("photoUrl", e.target.value)}
+            spellCheck={false}
+            className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-3 py-2 text-sm text-[var(--color-fg)] placeholder:text-[var(--color-fg-subtle)] outline-none transition-[border-color,box-shadow] duration-150 focus:border-[var(--color-accent)] focus:shadow-[0_0_0_3px_var(--color-accent-dim)]"
+          />
+          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => onPickPhoto(e.target.files?.[0])} />
+          <p className="mt-1 text-[11px] text-[var(--color-fg-subtle)]">Paste a hosted square URL, or upload (auto-cropped; uploaded images are Apple Mail only).</p>
+        </div>
 
         <Field
           label="Animated photo URL (GIF)"
@@ -107,6 +174,15 @@ export function Editor({ data, update, updateSocial, reset }: EditorProps) {
           <Toggle label="Show portrait" checked={data.showAvatar} onChange={(v) => update("showAvatar", v)} />
           <Toggle label="Verification badge" checked={data.showVerifiedBadge} onChange={(v) => update("showVerifiedBadge", v)} />
         </div>
+      </Section>
+
+      <Section title="Branding" hint="Optional">
+        <Field label="Company logo URL" value={data.logoUrl} onChange={(v) => update("logoUrl", v)} placeholder="https://…/logo.png (wide)" hint="Shown above the signature" />
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="CTA label" value={data.ctaLabel} onChange={(v) => update("ctaLabel", v)} placeholder="Book a call" />
+          <Field label="CTA URL" value={data.ctaUrl} onChange={(v) => update("ctaUrl", v)} placeholder="https://…" />
+        </div>
+        <Field label="Disclaimer" value={data.disclaimer} onChange={(v) => update("disclaimer", v)} placeholder="Confidentiality / GDPR small print" />
       </Section>
 
       <button
@@ -166,6 +242,28 @@ function Field({
         className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-3 py-2 text-sm text-[var(--color-fg)] placeholder:text-[var(--color-fg-subtle)] outline-none transition-[border-color,box-shadow] duration-150 focus:border-[var(--color-accent)] focus:shadow-[0_0_0_3px_var(--color-accent-dim)]"
       />
       {hint && <p className="mt-1 text-[11px] text-[var(--color-fg-subtle)]">{hint}</p>}
+    </div>
+  );
+}
+
+function Seg({ label, value, options, onChange }: { label: string; value: string; options: [string, string][]; onChange: (v: string) => void }) {
+  return (
+    <div>
+      <FieldLabel>{label}</FieldLabel>
+      <div className="flex rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] p-0.5 text-[12px]">
+        {options.map(([val, lbl]) => (
+          <button
+            key={val}
+            type="button"
+            onClick={() => onChange(val)}
+            className={`flex-1 rounded-md px-2 py-1 font-medium transition-colors duration-150 ${
+              value === val ? "bg-[var(--color-panel-hover)] text-[var(--color-fg)]" : "text-[var(--color-fg-subtle)] hover:text-[var(--color-fg-muted)]"
+            }`}
+          >
+            {lbl}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

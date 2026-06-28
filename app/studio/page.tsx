@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useMemo } from "react";
 import { usePersistentSignature } from "@/lib/usePersistentSignature";
+import type { SignatureData } from "@/lib/types";
 import { buildSignatureHtml } from "@/lib/exportHtml";
+import { lintSignature, type LintLevel } from "@/lib/lint";
 import { TEMPLATES } from "@/lib/templates";
 import { TemplateThumb } from "@/components/TemplateThumb";
 import { Editor } from "@/components/Editor";
@@ -11,7 +13,7 @@ import { ExportPanel } from "@/components/ExportPanel";
 import { SparkleIcon } from "@/components/icons";
 
 export default function Studio() {
-  const { data, update, updateSocial, reset } = usePersistentSignature();
+  const { data, update, updateSocial, setData, reset } = usePersistentSignature();
   const html = useMemo(() => buildSignatureHtml(data), [data]);
 
   return (
@@ -33,7 +35,7 @@ export default function Studio() {
 
       <main className="mx-auto grid max-w-[1280px] grid-cols-1 gap-6 px-6 pb-16 lg:grid-cols-[minmax(0,430px)_minmax(0,1fr)]">
         <section className="scroll-thin rounded-2xl border border-[var(--color-border)] bg-[var(--color-panel)] p-5 lg:sticky lg:top-6 lg:max-h-[calc(100vh-128px)] lg:overflow-auto">
-          <Editor data={data} update={update} updateSocial={updateSocial} reset={reset} />
+          <Editor data={data} update={update} updateSocial={updateSocial} setData={setData} reset={reset} />
         </section>
 
         <section className="flex flex-col gap-6">
@@ -77,6 +79,9 @@ export default function Studio() {
             </p>
           </div>
 
+          {/* Deliverability */}
+          <LintPanel data={data} />
+
           {/* Export */}
           <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-panel)] p-5">
             <h2 className="mb-4 font-display text-sm font-semibold text-[var(--color-fg)]">Export</h2>
@@ -84,6 +89,32 @@ export default function Studio() {
           </div>
         </section>
       </main>
+    </div>
+  );
+}
+
+function LintPanel({ data }: { data: SignatureData }) {
+  const { checks, bytes, gmailLimit } = useMemo(() => lintSignature(data), [data]);
+  const pct = Math.min(100, Math.round((bytes / gmailLimit) * 100));
+  const over = bytes > gmailLimit;
+  const dot = (l: LintLevel) => (l === "error" ? "bg-red-500" : l === "warn" ? "bg-amber-400" : "bg-emerald-500");
+  return (
+    <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-panel)] p-5">
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="font-display text-sm font-semibold text-[var(--color-fg)]">Deliverability</h2>
+        <span className={`font-mono text-[11px] ${over ? "text-red-400" : "text-[var(--color-fg-subtle)]"}`}>{(bytes / 1024).toFixed(1)} KB / ~10 KB Gmail</span>
+      </div>
+      <div className="mb-3 h-1.5 w-full overflow-hidden rounded-full bg-[var(--color-bg-elevated)]">
+        <div className="h-full rounded-full transition-[width] duration-300" style={{ width: `${pct}%`, background: over ? "#ef4444" : pct > 80 ? "#f59e0b" : "var(--color-accent)" }} />
+      </div>
+      <ul className="flex flex-col gap-1.5">
+        {checks.map((c, i) => (
+          <li key={i} className="flex items-start gap-2 text-[12px] leading-relaxed text-[var(--color-fg-muted)]">
+            <span className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${dot(c.level)}`} />
+            {c.message}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

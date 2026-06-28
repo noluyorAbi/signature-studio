@@ -24,6 +24,15 @@ export const DEFAULT_SIGNATURE: SignatureData = {
   showVerifiedBadge: true,
   accentColor: "#4d7dff",
 
+  fontStack: "sans",
+  roundness: "soft",
+  density: "cozy",
+
+  logoUrl: "",
+  ctaLabel: "",
+  ctaUrl: "",
+  disclaimer: "",
+
   socials: {
     website: "https://adatepe.dev",
     github: "https://github.com/noluyorAbi",

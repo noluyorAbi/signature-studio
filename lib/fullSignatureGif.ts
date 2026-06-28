@@ -125,7 +125,9 @@ export async function buildFullSignatureGif(
   const gif = GIFEncoder();
   const total = frames + hold;
   for (let i = 0; i < total; i++) {
-    const p = i < frames ? i / (frames - 1) : 1;
+    // Frame 0 = full photo so Outlook's first-frame render shows the complete
+    // signature; the reveal plays from i=1.
+    const p = i === 0 ? 1 : i < frames ? i / (frames - 1) : 1;
     ctx.drawImage(base, 0, 0);
     drawPortrait(ctx, img, px, py, ps, p, accentFill, onAccent, data.name);
     const { data: pixels } = ctx.getImageData(0, 0, W, H);

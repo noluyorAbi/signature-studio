@@ -5,6 +5,7 @@ import type { SignatureData } from "@/lib/types";
 import { buildSignatureHtml, buildSignatureDocument } from "@/lib/exportHtml";
 import { buildFullSignatureGif } from "@/lib/fullSignatureGif";
 import { buildClickableCardSignature } from "@/lib/cardSignature";
+import { buildVCard, buildPlainText } from "@/lib/exportExtras";
 import { CopyIcon, CheckIcon, DownloadIcon, CodeIcon, ExternalIcon, SparkleIcon } from "./icons";
 
 type Tab = "install" | "code";
@@ -28,7 +29,7 @@ export function ExportPanel({ data }: { data: SignatureData }) {
   const html = useMemo(() => buildSignatureHtml(data), [data]);
   const doc = useMemo(() => buildSignatureDocument(data), [data]);
   const [tab, setTab] = useState<Tab>("install");
-  const [copied, setCopied] = useState<"sig" | "code" | "whole" | "card" | null>(null);
+  const [copied, setCopied] = useState<"sig" | "code" | "whole" | "card" | "text" | null>(null);
 
   const [card, setCard] = useState<Job>("idle");
   const [cardHtml, setCardHtml] = useState<string | null>(null);
@@ -37,9 +38,18 @@ export function ExportPanel({ data }: { data: SignatureData }) {
   const [wholeUrl, setWholeUrl] = useState<string | null>(null);
   const [wholeData, setWholeData] = useState<{ dataUrl: string; width: number; blob: Blob } | null>(null);
 
-  function flash(which: "sig" | "code" | "whole" | "card") {
+  function flash(which: "sig" | "code" | "whole" | "card" | "text") {
     setCopied(which);
     setTimeout(() => setCopied((c) => (c === which ? null : c)), 1800);
+  }
+
+  function downloadVcf() {
+    const name = (data.name || "signature").replace(/\s+/g, "-").toLowerCase();
+    triggerDownload(new Blob([buildVCard(data)], { type: "text/vcard" }), `${name}.vcf`);
+  }
+  async function copyPlain() {
+    await navigator.clipboard.writeText(buildPlainText(data));
+    flash("text");
   }
 
   async function copyHtml(markup: string) {
@@ -123,11 +133,29 @@ export function ExportPanel({ data }: { data: SignatureData }) {
       </div>
 
       <p className="text-[12px] leading-relaxed text-[var(--color-fg-subtle)]">
-        Copy pastes a static, email-safe signature with clickable links — tiny (~3KB) and safe
+        Copy pastes a static, email-safe signature with clickable links: tiny (~3KB) and safe
         for Gmail. To animate the portrait <span className="text-[var(--color-fg-muted)]">in Gmail
         too</span>, host a GIF and paste its URL into <span className="text-[var(--color-fg)]">Animated
         photo URL</span>; this stays small. The embedded options below are for Apple Mail / iOS.
       </p>
+
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={copyPlain}
+          className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-[var(--color-border)] px-3 py-2 text-[12px] font-medium text-[var(--color-fg-muted)] transition-colors hover:text-[var(--color-fg)]"
+        >
+          {copied === "text" ? <CheckIcon size={14} /> : <CopyIcon size={14} />}
+          {copied === "text" ? "Copied" : "Plain text"}
+        </button>
+        <button
+          type="button"
+          onClick={downloadVcf}
+          className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-[var(--color-border)] px-3 py-2 text-[12px] font-medium text-[var(--color-fg-muted)] transition-colors hover:text-[var(--color-fg)]"
+        >
+          <DownloadIcon size={14} /> vCard (.vcf)
+        </button>
+      </div>
 
       <div className="relative flex rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] p-1 text-sm">
         <TabButton active={tab === "install"} onClick={() => setTab("install")}>

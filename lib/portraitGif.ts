@@ -83,7 +83,9 @@ export async function buildPortraitGif({
   const gif = GIFEncoder();
 
   for (let f = 0; f < total; f++) {
-    const p = f < reveal ? f / (reveal - 1) : 1;
+    // Frame 0 is the FULL photo so Outlook (shows only the first frame) renders
+    // the complete portrait, not a blank reveal start. The reveal plays from f=1.
+    const p = f === 0 ? 1 : f < reveal ? f / (reveal - 1) : 1;
     drawFrame(ctx, size, stripW, img, p, name, accent, onAccent);
 
     const { data } = ctx.getImageData(0, 0, size, size);
