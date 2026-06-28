@@ -1,25 +1,33 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { usePersistentSignature } from "@/lib/usePersistentSignature";
 import type { SignatureData } from "@/lib/types";
 import { buildSignatureHtml } from "@/lib/exportHtml";
 import { lintSignature, type LintLevel } from "@/lib/lint";
 import { TEMPLATES } from "@/lib/templates";
+import { PRESETS, applyPreset } from "@/lib/presets";
 import { TemplateThumb } from "@/components/TemplateThumb";
 import { Editor } from "@/components/Editor";
 import { ExportPanel } from "@/components/ExportPanel";
+import { ProfileBar } from "@/components/ProfileBar";
+import { CommandPalette, type Command } from "@/components/CommandPalette";
 import { SparkleIcon, ResetIcon } from "@/components/icons";
 
 export default function Studio() {
-  const { data, update, updateSocial, setData, reset, undo, redo, canUndo, canRedo } = usePersistentSignature();
+  const { data, update, updateSocial, setData, reset, undo, redo, canUndo, canRedo, profiles, activeId, switchProfile, addProfile, duplicateProfile, renameProfile, deleteProfile } =
+    usePersistentSignature();
   const html = useMemo(() => buildSignatureHtml(data), [data]);
+  const [paletteOpen, setPaletteOpen] = useState(false);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (!(e.metaKey || e.ctrlKey)) return;
-      if (e.key === "z" && !e.shiftKey) {
+      if (e.key === "k") {
+        e.preventDefault();
+        setPaletteOpen((o) => !o);
+      } else if (e.key === "z" && !e.shiftKey) {
         e.preventDefault();
         undo();
       } else if ((e.key === "z" && e.shiftKey) || e.key === "y") {
@@ -30,6 +38,22 @@ export default function Studio() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [undo, redo]);
+
+  const commands = useMemo<Command[]>(() => {
+    const c: Command[] = [
+      { id: "undo", label: "Undo", group: "Edit", run: undo },
+      { id: "redo", label: "Redo", group: "Edit", run: redo },
+      { id: "reset", label: "Reset to defaults", group: "Edit", run: reset },
+      { id: "toggle-portrait", label: `${data.showAvatar ? "Hide" : "Show"} portrait`, group: "Toggle", run: () => update("showAvatar", !data.showAvatar) },
+      { id: "toggle-badge", label: `${data.showVerifiedBadge ? "Hide" : "Show"} verification badge`, group: "Toggle", run: () => update("showVerifiedBadge", !data.showVerifiedBadge) },
+      { id: "new-profile", label: "New profile", group: "Profile", run: () => addProfile() },
+      { id: "dup-profile", label: "Duplicate profile", group: "Profile", run: () => duplicateProfile() },
+    ];
+    TEMPLATES.forEach((t) => c.push({ id: "tpl-" + t.id, label: `Template: ${t.name}`, group: "Template", run: () => update("templateId", t.id) }));
+    PRESETS.forEach((p) => c.push({ id: "preset-" + p.id, label: `Preset: ${p.name}`, group: "Preset", run: () => setData(applyPreset(data, p)) }));
+    profiles.forEach((p) => p.id !== activeId && c.push({ id: "switch-" + p.id, label: `Switch to ${p.name}`, group: "Profile", run: () => switchProfile(p.id) }));
+    return c;
+  }, [data, profiles, activeId, undo, redo, reset, update, setData, addProfile, duplicateProfile, switchProfile]);
 
   return (
     <div className="app-bg min-h-screen">
@@ -64,14 +88,35 @@ export default function Studio() {
               <ResetIcon size={14} className="-scale-x-100" />
             </button>
           </div>
+          <button
+            type="button"
+            onClick={() => setPaletteOpen(true)}
+            title="Command palette (Cmd/Ctrl+K)"
+            className="hidden items-center gap-1 rounded-lg border border-[var(--color-border)] px-2 py-1 font-mono text-[10px] text-[var(--color-fg-subtle)] transition-colors hover:text-[var(--color-fg)] sm:inline-flex"
+          >
+            ⌘K
+          </button>
           <Link href="/" className="hidden rounded-full border border-[var(--color-border)] px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-[var(--color-fg-subtle)] transition-colors hover:text-[var(--color-fg)] sm:inline">
             Home
           </Link>
         </div>
       </header>
 
+      {paletteOpen && <CommandPalette onClose={() => setPaletteOpen(false)} commands={commands} />}
+
       <main className="mx-auto grid max-w-[1280px] grid-cols-1 gap-6 px-6 pb-16 lg:grid-cols-[minmax(0,430px)_minmax(0,1fr)]">
         <section className="scroll-thin rounded-2xl border border-[var(--color-border)] bg-[var(--color-panel)] p-5 lg:sticky lg:top-6 lg:max-h-[calc(100vh-128px)] lg:overflow-auto">
+          <div className="mb-5">
+            <ProfileBar
+              profiles={profiles}
+              activeId={activeId}
+              onSwitch={switchProfile}
+              onAdd={addProfile}
+              onDuplicate={duplicateProfile}
+              onRename={renameProfile}
+              onDelete={deleteProfile}
+            />
+          </div>
           <Editor data={data} update={update} updateSocial={updateSocial} setData={setData} reset={reset} />
         </section>
 

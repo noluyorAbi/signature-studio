@@ -113,6 +113,12 @@ export const DownloadIcon = (p: IconProps) => (
   </Line>
 );
 
+export const PlusIcon = (p: IconProps) => (
+  <Line {...p}>
+    <path d="M12 5v14M5 12h14" />
+  </Line>
+);
+
 export const CheckIcon = (p: IconProps) => (
   <Line {...p}>
     <path d="m4.5 12.5 5 5 10-11" />
